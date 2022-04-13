@@ -1,0 +1,27 @@
+{
+  "name": "mnemo",
+  "private": true,
+  "author": {
+    "name": "Dani Lupión",
+    "email": "danilupion@gmail.com"
+  },
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "client:start:dev": "yarn workspace @mnemo/client start:dev",
+    "server:start:dev": "yarn workspace @mnemo/server start:dev",
+    "server:start:prod": "yarn workspace @mnemo/server start:prod",
+    "client:test:watch": "yarn workspace @mnemo/client test:watch",
+    "common:test:watch": "yarn workspace @mnemo/common test:watch",
+    "server:test:watch": "yarn workspace @mnemo/server test:watch",
+    "client:build": "yarn workspace @mnemo/client build",
+    "common:build": "yarn workspace @mnemo/common build",
+    "server:build": "yarn workspace @mnemo/server build",
+    "clean:install": "./scripts/clean-install.sh"
+  },
+  "devDependencies": {
+    "husky": "^7.0.4"
+  }
+}

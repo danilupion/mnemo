@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+yarn workspace @mnemo/client lint-staged
+yarn workspace @mnemo/common lint-staged
+yarn workspace @mnemo/server lint-staged

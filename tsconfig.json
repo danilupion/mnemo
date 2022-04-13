@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.build.json",
+
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@mnemo/common/*": ["packages/common/src/*"],
+    },
+    "noEmit": true
+  }
+}

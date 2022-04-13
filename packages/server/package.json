@@ -1,0 +1,55 @@
+{
+  "name": "@mnemo/server",
+  "version": "1.0.0",
+  "private": true,
+  "author": {
+    "name": "Dani Lupión",
+    "email": "danilupion@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "start:dev": "ts-node-dev --project tsconfig.build.json ./src/server.ts",
+    "start:prod": "ts-node --project tsconfig.build.json ./src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "lint:fix": "eslint -c .eslintrc.json 'src/**/*.ts' --fix",
+    "lint": "eslint -c .eslintrc.json 'src/**/*.ts'",
+    "prettify": "prettier --write  \"./src/**/*.{ts,tsx,json}\""
+  },
+  "dependencies": {
+    "@mnemo/common": "1.0.0",
+    "config": "^3.3.7",
+    "express": "^4.17.3",
+    "helmet": "^5.0.2",
+    "morgan": "^1.10.0",
+    "ts-node": "^10.7.0"
+  },
+  "devDependencies": {
+    "@types/config": "^0.0.41",
+    "@types/express": "^4.17.13",
+    "@types/morgan": "^1.9.3",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "eslint": "^8.13.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-import-resolver-typescript": "^2.7.1",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.1.4",
+    "eslint-plugin-node": "^11.1.0",
+    "jest": "^27.5.1",
+    "lint-staged": "^12.3.7",
+    "prettier": "^2.6.2",
+    "ts-jest": "^27.1.4",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.3"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "yarn prettify",
+      "yarn lint:fix",
+      "yarn test"
+    ]
+  }
+}
