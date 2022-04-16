@@ -1,11 +1,12 @@
 import styles from './App.module.scss';
+import Board from './board';
+
+const cards = [...Array(72).keys()].map((k) => (k + 1).toString());
 
 function App() {
   return (
     <div className={styles.app}>
-      <header className={styles.header}>
-        <p>Hello, world!</p>
-      </header>
+      <Board cards={cards} cardAspectRation={1} />
     </div>
   );
 }
