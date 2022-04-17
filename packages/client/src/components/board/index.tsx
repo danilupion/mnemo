@@ -1,4 +1,4 @@
-import { Card as CardModel } from '@mnemo/common/models/card';
+import { PublicCard } from '@mnemo/common/models/card';
 import { groupBy } from '@mnemo/common/utils/array';
 
 import useSize from '../../hooks/useSize';
@@ -8,7 +8,7 @@ import Line, { Direction } from './Line';
 import styles from './index.module.scss';
 
 interface BoardProps {
-  cards: CardModel[];
+  cards: PublicCard[];
   cardAspectRation: number;
 }
 

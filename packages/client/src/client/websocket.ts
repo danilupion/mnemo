@@ -10,11 +10,11 @@ import {
   join,
   requestReveal,
 } from '@mnemo/common/messages/server/table';
-import { Card } from '@mnemo/common/models/card';
+import { PrivateCard, PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
 
 interface WebsocketParams {
-  setDeck: (deck: Card[]) => void;
+  setDeck: (deck: PublicCard[]) => void;
   setCardContent: (cardId: number, content: string) => void;
 }
 
@@ -35,12 +35,12 @@ export default ({ setDeck, setCardContent }: WebsocketParams) => {
   });
 
   const joinMessage: JoinMessage = {
-    table: 'test',
+    table: window.location.pathname.split('/')[1],
   };
   socket.emit(join, joinMessage);
 };
 
-export const revealCard = (card: Card) => {
+export const revealCard = (card: PublicCard) => {
   const revealCardMessage: RequestRevealMessage = {
     cardId: card.cardId,
   };

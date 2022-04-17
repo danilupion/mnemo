@@ -1,9 +1,9 @@
-import { Card } from '../../models/card';
+import { PublicCard } from '../../models/card';
 
 export const deck = 'deck';
 
 export interface DeckMessage {
-  deck: Card[];
+  deck: PublicCard[];
 }
 
 export interface CardRevealMessage {
@@ -11,4 +11,4 @@ export interface CardRevealMessage {
   content: string;
 }
 
-export const cardReveal = 'cardreveal';
+export const cardReveal = 'cardReveal';

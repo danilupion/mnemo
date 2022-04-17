@@ -1,11 +1,11 @@
-import { Card as CardModel } from '@mnemo/common/models/card';
+import { PublicCard } from '@mnemo/common/models/card';
 import { makeAutoObservable } from 'mobx';
 
 class Card {
   public cardId: number;
   public content: string | null;
 
-  constructor(card: CardModel) {
+  constructor(card: PublicCard) {
     this.cardId = card.cardId;
     this.content = card.content;
 
@@ -24,7 +24,7 @@ export class TableStore {
     makeAutoObservable(this);
   }
 
-  public setDeck = (deck: CardModel[]) => {
+  public setDeck = (deck: PublicCard[]) => {
     this.cards = deck.map((card) => new Card(card));
   };
 

@@ -1,4 +1,4 @@
-import { Card as CardModel } from '@mnemo/common/models/card';
+import { PublicCard } from '@mnemo/common/models/card';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
@@ -9,7 +9,7 @@ import { revealCard } from '../../client/websocket';
 import style from './Card.module.scss';
 
 interface CardProps {
-  card: CardModel;
+  card: PublicCard;
   width: number;
   height: number;
 }
