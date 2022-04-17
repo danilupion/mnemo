@@ -1,5 +1,4 @@
-import cluster from 'cluster';
-import { cpus } from 'os';
+import http = require('http');
 import path from 'path';
 
 import config from 'config';
@@ -8,6 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { isDev } from './helpers/env';
+import initSocketIo from './helpers/socket.io';
 import errorHandler from './middleware/express/errorHandler';
 import notFoundHandler from './middleware/express/notFoundHandler';
 
@@ -47,19 +47,16 @@ const startServer = async () => {
   // Register custom error handler (should registered the last)
   app.use(errorHandler);
 
-  app.listen(port);
-  console.error(`Listening in port ${port}`);
+  const server = http.createServer(app);
+
+  initSocketIo(server);
+
+  server.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
 };
 
-if (config.get<boolean>('clustered') && cluster.isPrimary) {
-  // Create a worker for each CPU
-  for (const cpu of cpus()) {
-    console.log(`Forking for cpu: ${cpu.model}`);
-    cluster.fork();
-  }
-} else {
-  startServer().catch((e) => console.log('Error while creating the server', e));
-}
+startServer().catch((e) => console.log('Error while creating the server', e));
 
 process.on('unhandledRejection', (reason, p) => {
   console.error('Unhandled Rejection at:', p, 'reason:', reason);

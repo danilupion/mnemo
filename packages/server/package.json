@@ -7,6 +7,9 @@
     "email": "danilupion@gmail.com"
   },
   "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "start:dev": "ts-node-dev --project tsconfig.build.json ./src/server.ts",
     "start:prod": "ts-node --project tsconfig.build.json ./src/server.ts",
@@ -23,6 +26,7 @@
     "express": "^4.17.3",
     "helmet": "^5.0.2",
     "morgan": "^1.10.0",
+    "socket.io": "^4.4.1",
     "ts-node": "^10.7.0"
   },
   "devDependencies": {

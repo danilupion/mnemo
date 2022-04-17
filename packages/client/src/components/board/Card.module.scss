@@ -1,14 +1,45 @@
 .container {
+  position: relative;
   box-sizing: border-box;
-  // padding: 0.1em;
+
+  &.flipped {
+    .card.back {
+      transform: rotateY(0.5turn);
+    }
+
+    .card.front {
+      transform: rotateY(0);
+    }
+  }
+
   .card {
     box-sizing: border-box;
-    border: 0.2em solid #fff;
+    border: 2px solid #fff;
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
+
+    &.back, &.front {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: 0.5s ease-in-out;
+    }
+
+    &.back {
+      backface-visibility: hidden;
+    }
+
+    &.front {
+      backface-visibility: hidden;
+      transform: rotateY(0.5turn);
+      font-size: 7vmin;
+    }
   }
 }

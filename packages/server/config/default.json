@@ -2,6 +2,5 @@
   "environment": "development",
   "server": {
     "port": 3004
-  },
-  "clustered": false
+  }
 }

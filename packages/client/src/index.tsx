@@ -1,9 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
+import client from './client/websocket';
 import App from './components/App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
+import tableStore from './stores/table';
+
+client({ setDeck: tableStore.setDeck, setCardContent: tableStore.setCardContent });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

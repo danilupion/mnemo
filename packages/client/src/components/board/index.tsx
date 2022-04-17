@@ -1,12 +1,14 @@
+import { Card as CardModel } from '@mnemo/common/models/card';
+import { groupBy } from '@mnemo/common/utils/array';
+
 import useSize from '../../hooks/useSize';
-import { groupBy } from '../../utils/array';
 
 import Card from './Card';
 import Line, { Direction } from './Line';
 import styles from './index.module.scss';
 
 interface BoardProps {
-  cards: string[];
+  cards: CardModel[];
   cardAspectRation: number;
 }
 
@@ -61,9 +63,9 @@ const Board = ({ cards, cardAspectRation }: BoardProps) => {
     <div ref={ref} className={styles.cardsBoard}>
       <Line direction={Direction.column}>
         {groups.map((group, index) => (
-          <Line key={index} direction={Direction.row}>
-            {group.map((card, index) => (
-              <Card key={index} width={cardWidth} height={cardHeight} content={card} />
+          <Line key={`${index}-${groups.length}`} direction={Direction.row}>
+            {group.map((card) => (
+              <Card key={card.cardId} width={cardWidth} height={cardHeight} card={card} />
             ))}
           </Line>
         ))}
