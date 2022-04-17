@@ -7,7 +7,7 @@ import table from '../middleware/socket.io/table';
 const init = (server: HttpServer) => {
   const io = new Server(server, { path: '/websocket' });
 
-  io.use(table(io));
+  io.use(table);
 };
 
 export default init;

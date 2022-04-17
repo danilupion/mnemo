@@ -12,7 +12,7 @@ class Card {
     makeAutoObservable(this);
   }
 
-  setContent(content: string) {
+  setContent(content: string | null) {
     this.content = content;
   }
 }
@@ -33,6 +33,10 @@ export class TableStore {
     if (card) {
       card.setContent(content);
     }
+  };
+
+  public clearCardsContent = () => {
+    this.cards.forEach((card) => card.setContent(null));
   };
 
   public get deck(): Card[] {

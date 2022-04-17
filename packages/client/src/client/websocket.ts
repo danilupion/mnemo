@@ -3,6 +3,7 @@ import {
   DeckMessage,
   cardReveal,
   deck,
+  nextTurn,
 } from '@mnemo/common/messages/client/table';
 import {
   JoinMessage,
@@ -10,28 +11,33 @@ import {
   join,
   requestReveal,
 } from '@mnemo/common/messages/server/table';
-import { PrivateCard, PublicCard } from '@mnemo/common/models/card';
+import { PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
 
 interface WebsocketParams {
-  setDeck: (deck: PublicCard[]) => void;
-  setCardContent: (cardId: number, content: string) => void;
+  setDeckHandler: (deck: PublicCard[]) => void;
+  setCardContentHandler: (cardId: number, content: string) => void;
+  nextTurnHandler: () => void;
 }
 
 let socket: Socket;
 
-export default ({ setDeck, setCardContent }: WebsocketParams) => {
+export default ({ setDeckHandler, setCardContentHandler, nextTurnHandler }: WebsocketParams) => {
   socket = io({
     transports: ['websocket'],
     path: '/websocket',
   });
 
   socket.on(deck, (msg: DeckMessage) => {
-    setDeck(msg.deck);
+    setDeckHandler(msg.deck);
   });
 
   socket.on(cardReveal, (msg: CardRevealMessage) => {
-    setCardContent(msg.cardId, msg.content);
+    setCardContentHandler(msg.cardId, msg.content);
+  });
+
+  socket.on(nextTurn, () => {
+    nextTurnHandler();
   });
 
   const joinMessage: JoinMessage = {

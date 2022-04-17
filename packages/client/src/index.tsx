@@ -7,7 +7,11 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import tableStore from './stores/table';
 
-client({ setDeck: tableStore.setDeck, setCardContent: tableStore.setCardContent });
+client({
+  setDeckHandler: tableStore.setDeck,
+  setCardContentHandler: tableStore.setCardContent,
+  nextTurnHandler: tableStore.clearCardsContent,
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
