@@ -1,5 +1,7 @@
+@use 'src/styles/variables.scss';
+
 .cardsBoard {
-  height: 100%;
+  height: calc(100% - variables.$header-width);
   width: 100%;
   display: flex;
   flex-direction: column;

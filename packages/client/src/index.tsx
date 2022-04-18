@@ -8,10 +8,20 @@ import reportWebVitals from './reportWebVitals';
 import tableStore from './stores/table';
 
 client({
-  setDeckHandler: tableStore.setDeck,
+  setGameStoppedHandler: () => {
+    tableStore.setGameRunning(false);
+    tableStore.setMyTurn(false);
+  },
+  setDeckHandler: (deck) => {
+    tableStore.setDeck(deck);
+    tableStore.setGameRunning(true);
+  },
   setCardContentHandler: tableStore.setCardContent,
   setCardDiscoveredHandler: tableStore.setCardDiscovered,
-  nextTurnHandler: tableStore.clearCardsContent,
+  nextTurnHandler: (myTurn: boolean) => {
+    tableStore.clearCardsContent();
+    tableStore.setMyTurn(myTurn);
+  },
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);

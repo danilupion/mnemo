@@ -5,6 +5,7 @@ export enum ClientMessage {
   CardReveal = 'cardReveal',
   NextTurn = 'nextTurn',
   CardsDiscovered = 'cardsDiscovered',
+  GameStopped = 'gameStopped',
 }
 
 export interface DeckMessage {
@@ -14,6 +15,10 @@ export interface DeckMessage {
 export interface CardRevealMessage {
   cardId: number;
   content: string;
+}
+
+export interface NextTurnMessage {
+  myTurn: boolean;
 }
 
 export interface CardsDiscoveredMessage {

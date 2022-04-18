@@ -1,0 +1,9 @@
+@use 'src/styles/variables.scss';
+
+.header {
+  height: variables.$header-width;
+  display: flex;
+  flex-direction: row;
+  border-bottom: 3px solid black;
+  color: black;
+}

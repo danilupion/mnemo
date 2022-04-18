@@ -3,13 +3,14 @@ import {
   CardsDiscoveredMessage,
   ClientMessage,
   DeckMessage,
+  NextTurnMessage,
 } from '@mnemo/common/messages/client/table';
 import {
   JoinMessage,
   RequestRevealMessage,
-  ServerMesage,
+  ServerMessage,
 } from '@mnemo/common/messages/server/table';
-import { PrivateCard } from '@mnemo/common/models/card';
+import { PrivateCard, PublicCard } from '@mnemo/common/models/card';
 import { ExtendedError } from 'socket.io/dist/namespace';
 import { Socket } from 'socket.io/dist/socket';
 
@@ -18,7 +19,7 @@ import MemoryGame, { MemoryGameEvent } from '../../helpers/memoryGame';
 const games = new Map<string, { game: MemoryGame; clients: Socket[] }>();
 
 const connectionMiddleware = (socket: Socket, next: (err?: ExtendedError) => void) => {
-  socket.on(ServerMesage.Join, ({ table }: JoinMessage) => {
+  socket.on(ServerMessage.Join, ({ table }: JoinMessage, ack) => {
     if (!games.has(table)) {
       games.set(table, { game: new MemoryGame(), clients: [socket] });
     }
@@ -30,38 +31,47 @@ const connectionMiddleware = (socket: Socket, next: (err?: ExtendedError) => voi
     }
 
     if (!game.addPlayer(socket.id)) {
-      // TODO: handle game already started
+      ack(false);
       return;
     }
+    ack(true);
     socket.join(table);
 
-    const deckMessage: DeckMessage = {
-      deck: game.boardCards,
-    };
-    socket.emit(ClientMessage.Deck, deckMessage);
-
     game
+      .on(MemoryGameEvent.GameStarted, (cards: PublicCard[]) => {
+        const deckMessage: DeckMessage = {
+          deck: cards,
+        };
+        socket.emit(ClientMessage.Deck, deckMessage);
+      })
       .on(MemoryGameEvent.CardSelected, (card: PrivateCard) => {
         const cardRevealMessage: CardRevealMessage = {
           ...card,
         };
         socket.emit(ClientMessage.CardReveal, cardRevealMessage);
       })
-      .on(MemoryGameEvent.NewTurn, () => {
-        socket.emit(ClientMessage.NextTurn);
+      .on(MemoryGameEvent.NewTurn, (playerId: string) => {
+        const nextTurnMessage: NextTurnMessage = {
+          myTurn: playerId === socket.id,
+        };
+        socket.emit(ClientMessage.NextTurn, nextTurnMessage);
       })
       .on(MemoryGameEvent.CardsDiscovered, (cardIds: number[]) => {
         const cardsDiscoveredMessage: CardsDiscoveredMessage = {
           cardIds,
         };
         socket.emit(ClientMessage.CardsDiscovered, cardsDiscoveredMessage);
+      })
+      .on(MemoryGameEvent.GameEnded, () => {
+        socket.emit(ClientMessage.GameStopped);
       });
 
     socket
-      .on(ServerMesage.Reveal, ({ cardId }: RequestRevealMessage) => {
-        if (socket.id === game.getCurrentPlayer()) {
-          game.selectCard(cardId);
-        }
+      .on(ServerMessage.Start, () => {
+        game.start();
+      })
+      .on(ServerMessage.Reveal, ({ cardId }: RequestRevealMessage) => {
+        game.selectCard(socket.id, cardId);
       })
       .on('disconnect', () => {
         const index = clients.findIndex((c) => c.id === socket.id);

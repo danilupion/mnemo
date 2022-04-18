@@ -1,5 +1,6 @@
-export enum ServerMesage {
+export enum ServerMessage {
   Join = 'join',
+  Start = 'start',
   Reveal = 'reveal',
 }
 

@@ -1,19 +1,21 @@
 import { EventEmitter } from 'events';
 
 import { CardId, PrivateCard } from '@mnemo/common/models/card';
-import { shuffle } from '@mnemo/common/utils/array';
+import { randomItem, shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
 
 export enum MemoryGameEvent {
+  GameStarted = 'gameStarted',
   CardSelected = 'cardSelected',
   NewTurn = 'newTurn',
   CardsDiscovered = 'cardsDiscovered',
+  GameEnded = 'gameEnded',
 }
 
 const turnChangeDelay = 2000;
 
 class MemoryGame extends EventEmitter {
-  private cards: PrivateCard[];
+  private cards: PrivateCard[] = [];
   private players: string[] = [];
   private running = false;
 
@@ -22,25 +24,12 @@ class MemoryGame extends EventEmitter {
 
   constructor() {
     super();
-    const cards = emojis[EmojiType.AnimalsAndNature].slice(0, 10);
-    this.cards = shuffle(
-      [...cards, ...cards].map((emoji, index) => ({
-        cardId: index,
-        content: emoji,
-        discovered: false,
-      })),
-    );
   }
 
   public addPlayer(playerId: string) {
     if (!this.running) {
       if (this.players.find((player) => player === playerId) === undefined) {
         this.players.push(playerId);
-
-        // TODO: rethink, start should be called by player
-        if (this.players.length === 2) {
-          this.start();
-        }
       }
 
       return true;
@@ -67,14 +56,14 @@ class MemoryGame extends EventEmitter {
 
   private nextTurn(changePlayer: boolean) {
     if (this.currentPlayer === undefined) {
-      this.currentPlayer = this.players[0];
+      this.currentPlayer = randomItem(this.players);
     } else if (changePlayer) {
       this.currentPlayer =
         this.players[(this.players.indexOf(this.currentPlayer) + 1) % this.players.length];
     }
     this.selectedCards = [];
 
-    this.emit(MemoryGameEvent.NewTurn);
+    this.emit(MemoryGameEvent.NewTurn, this.currentPlayer);
   }
 
   private handleSelection() {
@@ -83,12 +72,24 @@ class MemoryGame extends EventEmitter {
     }
 
     if (this.selectedCards[0].content === this.selectedCards[1].content) {
-      // TODO: add pair to player
+      this.selectedCards.forEach((card) => {
+        card.discovered = true;
+      });
+
+      // TODO: add score to player
       this.emit(MemoryGameEvent.CardsDiscovered, [
         this.selectedCards[0].cardId,
         this.selectedCards[1].cardId,
       ]);
-      this.nextTurn(false);
+
+      if (this.cards.every((c) => c.discovered)) {
+        this.selectedCards = [];
+        this.currentPlayer = undefined;
+        this.running = false;
+        this.emit(MemoryGameEvent.GameEnded);
+      } else {
+        this.nextTurn(false);
+      }
     } else {
       this.nextTurn(true);
     }
@@ -99,11 +100,27 @@ class MemoryGame extends EventEmitter {
   }
 
   public start() {
-    this.running = true;
-    this.currentPlayer = this.players[0];
+    if (!this.running) {
+      this.running = true;
+
+      const cards = emojis[EmojiType.AnimalsAndNature].slice(0, 2);
+      this.cards = shuffle(
+        [...cards, ...cards].map((emoji, index) => ({
+          cardId: index,
+          content: emoji,
+          discovered: false,
+        })),
+      );
+      this.emit(MemoryGameEvent.GameStarted, this.boardCards);
+      this.nextTurn(true);
+    }
   }
 
-  public selectCard(cardId: CardId) {
+  public selectCard(playerId: string, cardId: CardId) {
+    if (playerId !== this.getCurrentPlayer()) {
+      return;
+    }
+
     if (this.selectedCards.length === 2) {
       return;
     }

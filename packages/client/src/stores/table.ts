@@ -25,6 +25,8 @@ class Card {
 
 export class TableStore {
   private cards: Card[] = [];
+  private myTurn = false;
+  private gameRunning = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -54,6 +56,22 @@ export class TableStore {
 
   public get deck(): Card[] {
     return this.cards;
+  }
+
+  public setMyTurn = (myTurn: boolean) => {
+    this.myTurn = myTurn;
+  };
+
+  public get isMyTurn(): boolean {
+    return this.myTurn;
+  }
+
+  public setGameRunning = (gameRunning: boolean) => {
+    this.gameRunning = gameRunning;
+  };
+
+  public get isGameRunning(): boolean {
+    return this.gameRunning;
   }
 }
 
