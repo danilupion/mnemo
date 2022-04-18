@@ -1,12 +1,13 @@
 import { EventEmitter } from 'events';
 
-import { PrivateCard } from '@mnemo/common/models/card';
+import { CardId, PrivateCard } from '@mnemo/common/models/card';
 import { shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
 
 export enum MemoryGameEvent {
   CardSelected = 'cardSelected',
   NewTurn = 'newTurn',
+  CardsDiscovered = 'cardsDiscovered',
 }
 
 const turnChangeDelay = 2000;
@@ -21,8 +22,13 @@ class MemoryGame extends EventEmitter {
 
   constructor() {
     super();
+    const cards = emojis[EmojiType.AnimalsAndNature].slice(0, 10);
     this.cards = shuffle(
-      emojis[EmojiType.AnimalsAndNature].map((emoji, index) => ({ cardId: index, content: emoji })),
+      [...cards, ...cards].map((emoji, index) => ({
+        cardId: index,
+        content: emoji,
+        discovered: false,
+      })),
     );
   }
 
@@ -55,20 +61,37 @@ class MemoryGame extends EventEmitter {
     return this.cards.map((c) => ({ ...c, content: null }));
   }
 
-  private getCardById(cardId: number) {
+  private getCardById(cardId: CardId) {
     return this.cards.find((c) => c.cardId === cardId);
   }
 
-  private nextTurn() {
+  private nextTurn(changePlayer: boolean) {
     if (this.currentPlayer === undefined) {
       this.currentPlayer = this.players[0];
-    } else {
+    } else if (changePlayer) {
       this.currentPlayer =
         this.players[(this.players.indexOf(this.currentPlayer) + 1) % this.players.length];
     }
     this.selectedCards = [];
 
     this.emit(MemoryGameEvent.NewTurn);
+  }
+
+  private handleSelection() {
+    if (this.selectedCards.length !== 2) {
+      return;
+    }
+
+    if (this.selectedCards[0].content === this.selectedCards[1].content) {
+      // TODO: add pair to player
+      this.emit(MemoryGameEvent.CardsDiscovered, [
+        this.selectedCards[0].cardId,
+        this.selectedCards[1].cardId,
+      ]);
+      this.nextTurn(false);
+    } else {
+      this.nextTurn(true);
+    }
   }
 
   public getCurrentPlayer() {
@@ -80,7 +103,7 @@ class MemoryGame extends EventEmitter {
     this.currentPlayer = this.players[0];
   }
 
-  public selectCard(cardId: number) {
+  public selectCard(cardId: CardId) {
     if (this.selectedCards.length === 2) {
       return;
     }
@@ -96,7 +119,7 @@ class MemoryGame extends EventEmitter {
 
       if (this.selectedCards.length === 2) {
         setTimeout(() => {
-          this.nextTurn();
+          this.handleSelection();
         }, turnChangeDelay);
       }
     }

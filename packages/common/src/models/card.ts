@@ -1,6 +1,9 @@
+export type CardId = number;
+
 export type PrivateCard = {
-  cardId: number;
+  cardId: CardId;
   content: string;
+  discovered: boolean;
 };
 
 export type PublicCard = Omit<PrivateCard, 'content'> & {

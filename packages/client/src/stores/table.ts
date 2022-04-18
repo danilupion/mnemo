@@ -1,19 +1,25 @@
-import { PublicCard } from '@mnemo/common/models/card';
+import { CardId, PublicCard } from '@mnemo/common/models/card';
 import { makeAutoObservable } from 'mobx';
 
 class Card {
-  public cardId: number;
+  public cardId: CardId;
   public content: string | null;
+  public discovered: boolean;
 
   constructor(card: PublicCard) {
     this.cardId = card.cardId;
     this.content = card.content;
+    this.discovered = card.discovered;
 
     makeAutoObservable(this);
   }
 
   setContent(content: string | null) {
     this.content = content;
+  }
+
+  setDiscovered() {
+    this.discovered = true;
   }
 }
 
@@ -28,10 +34,17 @@ export class TableStore {
     this.cards = deck.map((card) => new Card(card));
   };
 
-  public setCardContent = (cardId: number, content: string) => {
+  public setCardContent = (cardId: CardId, content: string) => {
     const card = this.cards.find((c) => c.cardId === cardId);
     if (card) {
       card.setContent(content);
+    }
+  };
+
+  public setCardDiscovered = (cardId: CardId) => {
+    const card = this.cards.find((c) => c.cardId === cardId);
+    if (card) {
+      card.setDiscovered();
     }
   };
 

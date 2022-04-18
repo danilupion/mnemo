@@ -1,15 +1,13 @@
 import {
   CardRevealMessage,
+  CardsDiscoveredMessage,
+  ClientMessage,
   DeckMessage,
-  cardReveal,
-  deck,
-  nextTurn,
 } from '@mnemo/common/messages/client/table';
 import {
   JoinMessage,
   RequestRevealMessage,
-  join,
-  requestReveal,
+  ServerMesage,
 } from '@mnemo/common/messages/server/table';
 import { PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
@@ -17,38 +15,44 @@ import { Socket, io } from 'socket.io-client';
 interface WebsocketParams {
   setDeckHandler: (deck: PublicCard[]) => void;
   setCardContentHandler: (cardId: number, content: string) => void;
+  setCardDiscoveredHandler: (cardId: number) => void;
   nextTurnHandler: () => void;
 }
 
 let socket: Socket;
 
-export default ({ setDeckHandler, setCardContentHandler, nextTurnHandler }: WebsocketParams) => {
+export default ({
+  setDeckHandler,
+  setCardContentHandler,
+  setCardDiscoveredHandler,
+  nextTurnHandler,
+}: WebsocketParams) => {
   socket = io({
     transports: ['websocket'],
     path: '/websocket',
-  });
-
-  socket.on(deck, (msg: DeckMessage) => {
-    setDeckHandler(msg.deck);
-  });
-
-  socket.on(cardReveal, (msg: CardRevealMessage) => {
-    setCardContentHandler(msg.cardId, msg.content);
-  });
-
-  socket.on(nextTurn, () => {
-    nextTurnHandler();
-  });
+  })
+    .on(ClientMessage.Deck, (msg: DeckMessage) => {
+      setDeckHandler(msg.deck);
+    })
+    .on(ClientMessage.CardReveal, ({ cardId, content }: CardRevealMessage) => {
+      setCardContentHandler(cardId, content);
+    })
+    .on(ClientMessage.CardsDiscovered, ({ cardIds }: CardsDiscoveredMessage) => {
+      cardIds.forEach((cardId) => setCardDiscoveredHandler(cardId));
+    })
+    .on(ClientMessage.NextTurn, () => {
+      nextTurnHandler();
+    });
 
   const joinMessage: JoinMessage = {
     table: window.location.pathname.split('/')[1],
   };
-  socket.emit(join, joinMessage);
+  socket.emit(ServerMesage.Join, joinMessage);
 };
 
 export const revealCard = (card: PublicCard) => {
   const revealCardMessage: RequestRevealMessage = {
     cardId: card.cardId,
   };
-  socket.emit(requestReveal, revealCardMessage);
+  socket.emit(ServerMesage.Reveal, revealCardMessage);
 };

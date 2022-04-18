@@ -26,8 +26,12 @@ const Card = observer(({ card, width, height }: CardProps) => {
       className={classNames(style.container, sizeStyle, { [style.flipped]: !!card.content })}
       onClick={handleClick}
     >
-      <div className={classNames(style.card, style.back)} />
-      <div className={classNames(style.card, style.front)}>{card.content}</div>
+      {!card.discovered && (
+        <div className={style.card}>
+          <div className={style.back} />
+          <div className={style.front}>{card.content}</div>
+        </div>
+      )}
     </div>
   );
 });

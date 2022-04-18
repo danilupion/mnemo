@@ -10,6 +10,7 @@ import tableStore from './stores/table';
 client({
   setDeckHandler: tableStore.setDeck,
   setCardContentHandler: tableStore.setCardContent,
+  setCardDiscoveredHandler: tableStore.setCardDiscovered,
   nextTurnHandler: tableStore.clearCardsContent,
 });
 

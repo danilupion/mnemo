@@ -1,16 +1,21 @@
 import { PublicCard } from '../../models/card';
 
-export const deck = 'deck';
+export enum ClientMessage {
+  Deck = 'deck',
+  CardReveal = 'cardReveal',
+  NextTurn = 'nextTurn',
+  CardsDiscovered = 'cardsDiscovered',
+}
 
 export interface DeckMessage {
   deck: PublicCard[];
 }
-
-export const cardReveal = 'cardReveal';
 
 export interface CardRevealMessage {
   cardId: number;
   content: string;
 }
 
-export const nextTurn = 'nextTurn';
+export interface CardsDiscoveredMessage {
+  cardIds: number[];
+}

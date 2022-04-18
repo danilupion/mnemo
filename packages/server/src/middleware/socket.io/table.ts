@@ -1,15 +1,13 @@
 import {
   CardRevealMessage,
+  CardsDiscoveredMessage,
+  ClientMessage,
   DeckMessage,
-  cardReveal,
-  deck,
-  nextTurn,
 } from '@mnemo/common/messages/client/table';
 import {
   JoinMessage,
   RequestRevealMessage,
-  join,
-  requestReveal,
+  ServerMesage,
 } from '@mnemo/common/messages/server/table';
 import { PrivateCard } from '@mnemo/common/models/card';
 import { ExtendedError } from 'socket.io/dist/namespace';
@@ -20,7 +18,7 @@ import MemoryGame, { MemoryGameEvent } from '../../helpers/memoryGame';
 const games = new Map<string, { game: MemoryGame; clients: Socket[] }>();
 
 const connectionMiddleware = (socket: Socket, next: (err?: ExtendedError) => void) => {
-  socket.on(join, ({ table }: JoinMessage) => {
+  socket.on(ServerMesage.Join, ({ table }: JoinMessage) => {
     if (!games.has(table)) {
       games.set(table, { game: new MemoryGame(), clients: [socket] });
     }
@@ -40,21 +38,27 @@ const connectionMiddleware = (socket: Socket, next: (err?: ExtendedError) => voi
     const deckMessage: DeckMessage = {
       deck: game.boardCards,
     };
-    socket.emit(deck, deckMessage);
+    socket.emit(ClientMessage.Deck, deckMessage);
 
     game
       .on(MemoryGameEvent.CardSelected, (card: PrivateCard) => {
         const cardRevealMessage: CardRevealMessage = {
           ...card,
         };
-        socket.emit(cardReveal, cardRevealMessage);
+        socket.emit(ClientMessage.CardReveal, cardRevealMessage);
       })
       .on(MemoryGameEvent.NewTurn, () => {
-        socket.emit(nextTurn);
+        socket.emit(ClientMessage.NextTurn);
+      })
+      .on(MemoryGameEvent.CardsDiscovered, (cardIds: number[]) => {
+        const cardsDiscoveredMessage: CardsDiscoveredMessage = {
+          cardIds,
+        };
+        socket.emit(ClientMessage.CardsDiscovered, cardsDiscoveredMessage);
       });
 
     socket
-      .on(requestReveal, ({ cardId }: RequestRevealMessage) => {
+      .on(ServerMesage.Reveal, ({ cardId }: RequestRevealMessage) => {
         if (socket.id === game.getCurrentPlayer()) {
           game.selectCard(cardId);
         }

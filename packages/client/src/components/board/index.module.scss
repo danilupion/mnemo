@@ -5,22 +5,5 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  .debug {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: bold;
-    z-index: 1;
-  }
 }
 
