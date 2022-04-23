@@ -1,3 +1,4 @@
+import { PlayerScore } from '@mnemo/common/events/table';
 import { CardId, PublicCard } from '@mnemo/common/models/card';
 import { makeAutoObservable } from 'mobx';
 
@@ -24,17 +25,15 @@ class Card {
 }
 
 export class TableStore {
-  private cards: Card[] = [];
-  private myTurn = false;
-  private gameRunning = false;
+  private _cards: Card[] = [];
+  private _isMyTurn = false;
+  private _isGameRunning = false;
+  private _currentPlayer?: string;
+  private _ranking: PlayerScore[] = [];
 
   constructor() {
     makeAutoObservable(this);
   }
-
-  public setDeck = (deck: PublicCard[]) => {
-    this.cards = deck.map((card) => new Card(card));
-  };
 
   public setCardContent = (cardId: CardId, content: string) => {
     const card = this.cards.find((c) => c.cardId === cardId);
@@ -54,24 +53,44 @@ export class TableStore {
     this.cards.forEach((card) => card.setContent(null));
   };
 
-  public get deck(): Card[] {
-    return this.cards;
+  public set cards(deck: PublicCard[]) {
+    this._cards = deck.map((card) => new Card(card));
   }
 
-  public setMyTurn = (myTurn: boolean) => {
-    this.myTurn = myTurn;
-  };
-
-  public get isMyTurn(): boolean {
-    return this.myTurn;
+  public get cards(): Card[] {
+    return this._cards;
   }
 
-  public setGameRunning = (gameRunning: boolean) => {
-    this.gameRunning = gameRunning;
-  };
+  public set isMyTurn(myTurn: boolean) {
+    this._isMyTurn = myTurn;
+  }
 
-  public get isGameRunning(): boolean {
-    return this.gameRunning;
+  public get isMyTurn() {
+    return this._isMyTurn;
+  }
+
+  public set isGameRunning(gameRunning: boolean) {
+    this._isGameRunning = gameRunning;
+  }
+
+  public get isGameRunning() {
+    return this._isGameRunning;
+  }
+
+  public get currentPlayer() {
+    return this._currentPlayer;
+  }
+
+  public set currentPlayer(player: string | undefined) {
+    this._currentPlayer = player;
+  }
+
+  public set ranking(ranking: PlayerScore[]) {
+    this._ranking = ranking;
+  }
+
+  public get ranking() {
+    return this._ranking.slice().sort((a, b) => b.score - a.score);
   }
 }
 

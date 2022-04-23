@@ -1,6 +1,7 @@
 import {
   ClientToServerTableEvent,
   ClientToServerTableEvents,
+  PlayerScore,
   ServerToClientTableEvent,
   ServerToClientTableEvents,
 } from '@mnemo/common/events/table';
@@ -8,41 +9,38 @@ import { PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
 
 interface WebsocketParams {
-  setGameStoppedHandler: () => void;
-  setDeckHandler: (deck: PublicCard[]) => void;
+  name: string;
+  gameEndHandler: () => void;
+  gameStartHandler: (deck: PublicCard[], scores: PlayerScore[]) => void;
   setCardContentHandler: (cardId: number, content: string) => void;
-  setCardDiscoveredHandler: (cardId: number) => void;
-  nextTurnHandler: (myTurn: boolean) => void;
+  cardDiscoveredHandler: (cardIds: number[], scores: PlayerScore[]) => void;
+  nextTurnHandler: (player: string, myTurn: boolean) => void;
 }
 
 let socket: Socket<ServerToClientTableEvents, ClientToServerTableEvents>;
 
 export default ({
-  setGameStoppedHandler,
-  setDeckHandler,
+  name,
+  gameEndHandler,
+  gameStartHandler,
   setCardContentHandler,
-  setCardDiscoveredHandler,
+  cardDiscoveredHandler,
   nextTurnHandler,
 }: WebsocketParams) => {
   socket = io({
     transports: ['websocket'],
     path: '/websocket',
+    query: {
+      name,
+    },
   });
 
   socket
-    .on(ServerToClientTableEvent.GameStopped, () => setGameStoppedHandler())
-    .on(ServerToClientTableEvent.Deck, (deck) => {
-      setDeckHandler(deck);
-    })
-    .on(ServerToClientTableEvent.NextTurn, (myTurn) => {
-      nextTurnHandler(myTurn);
-    })
-    .on(ServerToClientTableEvent.CardRevealed, (cardId, content) => {
-      setCardContentHandler(cardId, content);
-    })
-    .on(ServerToClientTableEvent.CardDiscovered, (cardIds) => {
-      cardIds.forEach((cardId) => setCardDiscoveredHandler(cardId));
-    });
+    .on(ServerToClientTableEvent.GameEnd, gameEndHandler)
+    .on(ServerToClientTableEvent.GameStart, gameStartHandler)
+    .on(ServerToClientTableEvent.NextTurn, nextTurnHandler)
+    .on(ServerToClientTableEvent.CardRevealed, setCardContentHandler)
+    .on(ServerToClientTableEvent.CardDiscovered, cardDiscoveredHandler);
 
   const table = window.location.pathname.split('/')[1];
 

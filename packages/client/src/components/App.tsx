@@ -1,18 +1,21 @@
 import { observer } from 'mobx-react-lite';
 
-import { useTableStore } from '../hooks/useStore';
+import { useTableStore, useUiStore } from '../hooks/useStore';
 
 import styles from './App.module.scss';
 import Board from './board';
 import Header from './header';
+import ScoreBoard from './scoreBoard';
 
 const App = observer(() => {
   const tableStore = useTableStore();
+  const uiStore = useUiStore();
 
   return (
     <div className={styles.app}>
-      <Header gameRunning={tableStore.isGameRunning} myTurn={tableStore.isMyTurn} />
-      <Board cards={tableStore.deck} cardAspectRation={1} />
+      {uiStore.isScoreBoardOpen && <ScoreBoard />}
+      <Header />
+      <Board cards={tableStore.cards} cardAspectRation={1} />
     </div>
   );
 });

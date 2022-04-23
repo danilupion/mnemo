@@ -6,20 +6,25 @@ import { randomItem, shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
 import config from 'config';
 
+export interface Player {
+  id: string;
+  score: number;
+}
+
 export enum MemoryGameEvent {
-  GameStarted = 'gmeStarted',
-  CardSelected = 'cardSelected',
+  GameStart = 'gmeStart',
+  CardSelection = 'cardSelection',
   NewTurn = 'newTurn',
-  CardsDiscovered = 'cardsDiscovered',
-  GameEnded = 'gameEnded',
+  CardsDiscovery = 'cardsDiscovery',
+  GameEnd = 'gameEnd',
 }
 
 interface MemoryGameEvents {
-  [MemoryGameEvent.GameStarted]: (cards: PublicCard[]) => void;
-  [MemoryGameEvent.CardSelected]: (card: PublicCard) => void;
+  [MemoryGameEvent.GameStart]: (cards: PublicCard[], score: Player[]) => void;
+  [MemoryGameEvent.CardSelection]: (card: PublicCard) => void;
   [MemoryGameEvent.NewTurn]: (playerId: PlayerId) => void;
-  [MemoryGameEvent.CardsDiscovered]: (cards: CardId[]) => void;
-  [MemoryGameEvent.GameEnded]: () => void;
+  [MemoryGameEvent.CardsDiscovery]: (cards: CardId[], score: Player[]) => void;
+  [MemoryGameEvent.GameEnd]: () => void;
 }
 
 const turnChangeDelay = 2000;
@@ -32,11 +37,10 @@ const publicCardFactory = (card: PrivateCard, preserveValue = false): PublicCard
 
 class MemoryGame {
   private cards: PrivateCard[] = [];
-  private players: PlayerId[] = [];
+  private players: Player[] = [];
   private running = false;
   private emitter = new EventEmitter();
-
-  private currentPlayer: PlayerId | undefined = undefined;
+  private currentPlayer: Player | undefined = undefined;
   private selectedCards: PrivateCard[] = [];
 
   private emit<E extends keyof MemoryGameEvents>(
@@ -55,8 +59,8 @@ class MemoryGame {
 
   public addPlayer(playerId: PlayerId) {
     if (!this.running) {
-      if (this.players.find((player) => player === playerId) === undefined) {
-        this.players.push(playerId);
+      if (this.players.find((player) => player.id === playerId) === undefined) {
+        this.players.push({ id: playerId, score: 0 });
       }
 
       return true;
@@ -66,11 +70,10 @@ class MemoryGame {
   }
 
   public removePlayer(playerId: PlayerId) {
-    if (!this.running) {
-      this.players = this.players.filter((player) => player !== playerId);
-      return true;
+    if (this.running) {
+      // TODO: cleanup
     }
-    return false;
+    this.players = this.players.filter((player) => player.id !== playerId);
   }
 
   public get boardCards() {
@@ -90,7 +93,7 @@ class MemoryGame {
     }
     this.selectedCards = [];
 
-    this.emit(MemoryGameEvent.NewTurn, this.currentPlayer);
+    this.emit(MemoryGameEvent.NewTurn, this.currentPlayer.id);
   }
 
   private handleSelection() {
@@ -103,27 +106,29 @@ class MemoryGame {
         card.discovered = true;
       });
 
-      // TODO: add score to player
-      this.emit(MemoryGameEvent.CardsDiscovered, [
-        this.selectedCards[0].cardId,
-        this.selectedCards[1].cardId,
-      ]);
+      if (this.currentPlayer) {
+        this.currentPlayer.score += 1;
+      }
+      this.emit(
+        MemoryGameEvent.CardsDiscovery,
+        [this.selectedCards[0].cardId, this.selectedCards[1].cardId],
+        [...this.players],
+      );
 
       if (this.cards.every((c) => c.discovered)) {
         this.currentPlayer = undefined;
+        this.players.forEach((player) => {
+          player.score = 0;
+        });
         this.selectedCards = [];
         this.running = false;
-        this.emit(MemoryGameEvent.GameEnded);
+        this.emit(MemoryGameEvent.GameEnd);
       } else {
         this.nextTurn(false);
       }
     } else {
       this.nextTurn(true);
     }
-  }
-
-  public getCurrentPlayer() {
-    return this.currentPlayer;
   }
 
   public start() {
@@ -138,13 +143,13 @@ class MemoryGame {
           discovered: false,
         })),
       );
-      this.emit(MemoryGameEvent.GameStarted, this.boardCards);
+      this.emit(MemoryGameEvent.GameStart, this.boardCards, [...this.players]);
       this.nextTurn(true);
     }
   }
 
   public selectCard(playerId: PlayerId, cardId: CardId) {
-    if (playerId !== this.getCurrentPlayer()) {
+    if (this.currentPlayer && playerId !== this.currentPlayer.id) {
       return;
     }
 
@@ -163,7 +168,7 @@ class MemoryGame {
       }
 
       this.selectedCards.push(card);
-      this.emit(MemoryGameEvent.CardSelected, publicCardFactory(card, true));
+      this.emit(MemoryGameEvent.CardSelection, publicCardFactory(card, true));
 
       if (this.selectedCards.length === 2) {
         setTimeout(() => {

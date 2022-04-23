@@ -6,21 +6,28 @@ import App from './components/App';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import tableStore from './stores/table';
+import userStore from './stores/user';
 
 client({
-  setGameStoppedHandler: () => {
-    tableStore.setGameRunning(false);
-    tableStore.setMyTurn(false);
+  name: userStore.name,
+  gameEndHandler: () => {
+    tableStore.isGameRunning = false;
+    tableStore.isMyTurn = false;
   },
-  setDeckHandler: (deck) => {
-    tableStore.setDeck(deck);
-    tableStore.setGameRunning(true);
+  gameStartHandler: (cards, scores) => {
+    tableStore.ranking = scores;
+    tableStore.cards = cards;
+    tableStore.isGameRunning = true;
   },
   setCardContentHandler: tableStore.setCardContent,
-  setCardDiscoveredHandler: tableStore.setCardDiscovered,
-  nextTurnHandler: (myTurn: boolean) => {
+  cardDiscoveredHandler: (cardIds, scores) => {
+    cardIds.forEach((cardId) => tableStore.setCardDiscovered(cardId));
+    tableStore.ranking = scores;
+  },
+  nextTurnHandler: (currentPlayer: string, myTurn: boolean) => {
     tableStore.clearCardsContent();
-    tableStore.setMyTurn(myTurn);
+    tableStore.currentPlayer = currentPlayer;
+    tableStore.isMyTurn = myTurn;
   },
 });
 

@@ -1,19 +1,25 @@
+import { observer } from 'mobx-react-lite';
+
 import { startGame } from '../../client/websocket';
+import { useTableStore, useUiStore } from '../../hooks/useStore';
 
 import styles from './index.module.scss';
 
-interface HeaderProps {
-  myTurn: boolean;
-  gameRunning: boolean;
-}
+const Header = observer(() => {
+  const tableStore = useTableStore();
+  const uiStore = useUiStore();
 
-const Header = ({ gameRunning, myTurn }: HeaderProps) => {
   return (
     <div className={styles.header}>
-      {!gameRunning && <button onClick={startGame}>Start</button>}
-      {myTurn && <p>Your turn</p>}
+      {!tableStore.isGameRunning && <button onClick={startGame}>Empezar</button>}
+      <button onClick={uiStore.openScoreBoard}>Mostrar Puntuación</button>
+      {tableStore.isMyTurn ? (
+        <p>Tu turno</p>
+      ) : (
+        tableStore.currentPlayer && <p>{`Turno de ${tableStore.currentPlayer}`}</p>
+      )}
     </div>
   );
-};
+});
 
 export default Header;
