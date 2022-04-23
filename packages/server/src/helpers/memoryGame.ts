@@ -105,7 +105,7 @@ class MemoryGame extends EventEmitter {
     if (!this.running) {
       this.running = true;
 
-      const cards = emojis[EmojiType.AnimalsAndNature].slice(0, numberOfCards);
+      const cards = shuffle(emojis[EmojiType.AnimalsAndNature]).slice(0, numberOfCards);
       this.cards = shuffle(
         [...cards, ...cards].map((emoji, index) => ({
           cardId: index,
@@ -133,6 +133,10 @@ class MemoryGame extends EventEmitter {
 
     const card = this.getCardById(cardId);
     if (card) {
+      if (card.discovered) {
+        return;
+      }
+
       this.selectedCards.push(card);
       this.emit(MemoryGameEvent.CardSelected, card);
 
