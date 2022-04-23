@@ -1,6 +1,10 @@
 {
   "environment": "development",
   "server": {
-    "port": 3004
+    "port": 3004,
+    "debug": true
+  },
+  "game": {
+    "numberOfCards": 16
   }
 }

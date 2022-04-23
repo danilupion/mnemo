@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { CardId, PrivateCard } from '@mnemo/common/models/card';
 import { randomItem, shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
+import config from 'config';
 
 export enum MemoryGameEvent {
   GameStarted = 'gameStarted',
@@ -13,6 +14,7 @@ export enum MemoryGameEvent {
 }
 
 const turnChangeDelay = 2000;
+const numberOfCards = config.get<number>('game.numberOfCards');
 
 class MemoryGame extends EventEmitter {
   private cards: PrivateCard[] = [];
@@ -83,8 +85,8 @@ class MemoryGame extends EventEmitter {
       ]);
 
       if (this.cards.every((c) => c.discovered)) {
-        this.selectedCards = [];
         this.currentPlayer = undefined;
+        this.selectedCards = [];
         this.running = false;
         this.emit(MemoryGameEvent.GameEnded);
       } else {
@@ -103,7 +105,7 @@ class MemoryGame extends EventEmitter {
     if (!this.running) {
       this.running = true;
 
-      const cards = emojis[EmojiType.AnimalsAndNature].slice(0, 2);
+      const cards = emojis[EmojiType.AnimalsAndNature].slice(0, numberOfCards);
       this.cards = shuffle(
         [...cards, ...cards].map((emoji, index) => ({
           cardId: index,

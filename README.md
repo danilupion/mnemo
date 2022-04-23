@@ -36,6 +36,14 @@ Builds the common library for production
 
 Builds the server app for production
 
+### `yarn build`
+
+Builds the whole application and sets needed links
+
+### `yarn server:build`
+
+Builds the server app for production
+
 ### `yarn clean:install`
 
 Cleans all node_modules folders and installs dependencies from scratch

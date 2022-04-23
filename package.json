@@ -12,6 +12,7 @@
   "scripts": {
     "client:start:dev": "yarn workspace @mnemo/client start:dev",
     "server:start:dev": "yarn workspace @mnemo/server start:dev",
+    "start:dev": "./scripts/parallelRun.sh 'yarn client:start:dev' 'yarn server:start:dev'",
     "server:start:prod": "yarn workspace @mnemo/server start:prod",
     "client:test:watch": "yarn workspace @mnemo/client test:watch",
     "common:test:watch": "yarn workspace @mnemo/common test:watch",
@@ -19,6 +20,7 @@
     "client:build": "yarn workspace @mnemo/client build",
     "common:build": "yarn workspace @mnemo/common build",
     "server:build": "yarn workspace @mnemo/server build",
+    "build": "./scripts/build.sh",
     "clean:install": "./scripts/clean-install.sh"
   },
   "devDependencies": {
