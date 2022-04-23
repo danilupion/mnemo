@@ -1,34 +1,59 @@
 import { EventEmitter } from 'events';
 
-import { CardId, PrivateCard } from '@mnemo/common/models/card';
+import { CardId, PrivateCard, PublicCard } from '@mnemo/common/models/card';
+import { PlayerId } from '@mnemo/common/models/player';
 import { randomItem, shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
 import config from 'config';
 
 export enum MemoryGameEvent {
-  GameStarted = 'gameStarted',
+  GameStarted = 'gmeStarted',
   CardSelected = 'cardSelected',
   NewTurn = 'newTurn',
   CardsDiscovered = 'cardsDiscovered',
   GameEnded = 'gameEnded',
 }
 
+interface MemoryGameEvents {
+  [MemoryGameEvent.GameStarted]: (cards: PublicCard[]) => void;
+  [MemoryGameEvent.CardSelected]: (card: PublicCard) => void;
+  [MemoryGameEvent.NewTurn]: (playerId: PlayerId) => void;
+  [MemoryGameEvent.CardsDiscovered]: (cards: CardId[]) => void;
+  [MemoryGameEvent.GameEnded]: () => void;
+}
+
 const turnChangeDelay = 2000;
 const numberOfCards = config.get<number>('game.numberOfCards');
 
-class MemoryGame extends EventEmitter {
-  private cards: PrivateCard[] = [];
-  private players: string[] = [];
-  private running = false;
+const publicCardFactory = (card: PrivateCard, preserveValue = false): PublicCard => ({
+  ...card,
+  content: preserveValue ? card.content : null,
+});
 
-  private currentPlayer: string | undefined = undefined;
+class MemoryGame {
+  private cards: PrivateCard[] = [];
+  private players: PlayerId[] = [];
+  private running = false;
+  private emitter = new EventEmitter();
+
+  private currentPlayer: PlayerId | undefined = undefined;
   private selectedCards: PrivateCard[] = [];
 
-  constructor() {
-    super();
+  private emit<E extends keyof MemoryGameEvents>(
+    event: E,
+    ...args: Parameters<MemoryGameEvents[E]>
+  ) {
+    return this.emitter.emit(event, ...args);
   }
 
-  public addPlayer(playerId: string) {
+  public on<E extends keyof MemoryGameEvents>(
+    event: E,
+    listener: (...args: Parameters<MemoryGameEvents[E]>) => void,
+  ) {
+    return this.emitter.on(event, listener as (...args: unknown[]) => void);
+  }
+
+  public addPlayer(playerId: PlayerId) {
     if (!this.running) {
       if (this.players.find((player) => player === playerId) === undefined) {
         this.players.push(playerId);
@@ -40,7 +65,7 @@ class MemoryGame extends EventEmitter {
     return false;
   }
 
-  public removePlayer(playerId: string) {
+  public removePlayer(playerId: PlayerId) {
     if (!this.running) {
       this.players = this.players.filter((player) => player !== playerId);
       return true;
@@ -49,7 +74,7 @@ class MemoryGame extends EventEmitter {
   }
 
   public get boardCards() {
-    return this.cards.map((c) => ({ ...c, content: null }));
+    return this.cards.map((c) => publicCardFactory(c));
   }
 
   private getCardById(cardId: CardId) {
@@ -118,7 +143,7 @@ class MemoryGame extends EventEmitter {
     }
   }
 
-  public selectCard(playerId: string, cardId: CardId) {
+  public selectCard(playerId: PlayerId, cardId: CardId) {
     if (playerId !== this.getCurrentPlayer()) {
       return;
     }
@@ -138,7 +163,7 @@ class MemoryGame extends EventEmitter {
       }
 
       this.selectedCards.push(card);
-      this.emit(MemoryGameEvent.CardSelected, card);
+      this.emit(MemoryGameEvent.CardSelected, publicCardFactory(card, true));
 
       if (this.selectedCards.length === 2) {
         setTimeout(() => {

@@ -1,15 +1,9 @@
 import {
-  CardRevealMessage,
-  CardsDiscoveredMessage,
-  ClientMessage,
-  DeckMessage,
-  NextTurnMessage,
-} from '@mnemo/common/messages/client/table';
-import {
-  JoinMessage,
-  RequestRevealMessage,
-  ServerMessage,
-} from '@mnemo/common/messages/server/table';
+  ClientToServerTableEvent,
+  ClientToServerTableEvents,
+  ServerToClientTableEvent,
+  ServerToClientTableEvents,
+} from '@mnemo/common/events/table';
 import { PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
 
@@ -21,7 +15,7 @@ interface WebsocketParams {
   nextTurnHandler: (myTurn: boolean) => void;
 }
 
-let socket: Socket;
+let socket: Socket<ServerToClientTableEvents, ClientToServerTableEvents>;
 
 export default ({
   setGameStoppedHandler,
@@ -33,25 +27,26 @@ export default ({
   socket = io({
     transports: ['websocket'],
     path: '/websocket',
-  })
-    .on(ClientMessage.GameStopped, () => setGameStoppedHandler())
-    .on(ClientMessage.Deck, (msg: DeckMessage) => {
-      setDeckHandler(msg.deck);
+  });
+
+  socket
+    .on(ServerToClientTableEvent.GameStopped, () => setGameStoppedHandler())
+    .on(ServerToClientTableEvent.Deck, (deck) => {
+      setDeckHandler(deck);
     })
-    .on(ClientMessage.NextTurn, ({ myTurn }: NextTurnMessage) => {
+    .on(ServerToClientTableEvent.NextTurn, (myTurn) => {
       nextTurnHandler(myTurn);
     })
-    .on(ClientMessage.CardReveal, ({ cardId, content }: CardRevealMessage) => {
+    .on(ServerToClientTableEvent.CardRevealed, (cardId, content) => {
       setCardContentHandler(cardId, content);
     })
-    .on(ClientMessage.CardsDiscovered, ({ cardIds }: CardsDiscoveredMessage) => {
+    .on(ServerToClientTableEvent.CardDiscovered, (cardIds) => {
       cardIds.forEach((cardId) => setCardDiscoveredHandler(cardId));
     });
 
-  const joinMessage: JoinMessage = {
-    table: window.location.pathname.split('/')[1],
-  };
-  socket.emit(ServerMessage.Join, joinMessage, (success: boolean) => {
+  const table = window.location.pathname.split('/')[1];
+
+  socket.emit(ClientToServerTableEvent.Join, table, (success: boolean) => {
     if (!success) {
       window.alert('Game already started');
     }
@@ -59,12 +54,9 @@ export default ({
 };
 
 export const revealCard = (card: PublicCard) => {
-  const revealCardMessage: RequestRevealMessage = {
-    cardId: card.cardId,
-  };
-  socket.emit(ServerMessage.Reveal, revealCardMessage);
+  socket.emit(ClientToServerTableEvent.Reveal, card.cardId);
 };
 
 export const startGame = () => {
-  socket.emit(ServerMessage.Start);
+  socket.emit(ClientToServerTableEvent.Start);
 };
