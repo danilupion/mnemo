@@ -1,10 +1,11 @@
 import {
-  ClientToServerTableEvent,
-  ClientToServerTableEvents,
+  ClientToServerMemoryGameEvent,
+  ClientToServerMemoryGameEvents,
   PlayerScore,
-  ServerToClientTableEvent,
-  ServerToClientTableEvents,
-} from '@mnemo/common/events/table';
+  ServerToClientMemoryGameEvent,
+  ServerToClientMemoryGameEvents,
+} from '@mnemo/common/events/memoryGame';
+import { ClientToServerRoomEvent, ClientToServerRoomEvents } from '@mnemo/common/events/room';
 import { PublicCard } from '@mnemo/common/models/card';
 import { Socket, io } from 'socket.io-client';
 
@@ -17,7 +18,10 @@ interface WebsocketParams {
   nextTurnHandler: (player: string, myTurn: boolean) => void;
 }
 
-let socket: Socket<ServerToClientTableEvents, ClientToServerTableEvents>;
+let socket: Socket<
+  ServerToClientMemoryGameEvents,
+  ClientToServerMemoryGameEvents & ClientToServerRoomEvents
+>;
 
 export default ({
   name,
@@ -36,15 +40,15 @@ export default ({
   });
 
   socket
-    .on(ServerToClientTableEvent.GameEnd, gameEndHandler)
-    .on(ServerToClientTableEvent.GameStart, gameStartHandler)
-    .on(ServerToClientTableEvent.NextTurn, nextTurnHandler)
-    .on(ServerToClientTableEvent.CardRevealed, setCardContentHandler)
-    .on(ServerToClientTableEvent.CardDiscovered, cardDiscoveredHandler);
+    .on(ServerToClientMemoryGameEvent.GameEnd, gameEndHandler)
+    .on(ServerToClientMemoryGameEvent.GameStart, gameStartHandler)
+    .on(ServerToClientMemoryGameEvent.NextTurn, nextTurnHandler)
+    .on(ServerToClientMemoryGameEvent.CardRevealed, setCardContentHandler)
+    .on(ServerToClientMemoryGameEvent.CardDiscovered, cardDiscoveredHandler);
 
   const table = window.location.pathname.split('/')[1];
 
-  socket.emit(ClientToServerTableEvent.Join, table, (success: boolean) => {
+  socket.emit(ClientToServerRoomEvent.Join, table, (success: boolean) => {
     if (!success) {
       window.alert('Game already started');
     }
@@ -52,9 +56,9 @@ export default ({
 };
 
 export const revealCard = (card: PublicCard) => {
-  socket.emit(ClientToServerTableEvent.Reveal, card.cardId);
+  socket.emit(ClientToServerMemoryGameEvent.Reveal, card.cardId);
 };
 
 export const startGame = () => {
-  socket.emit(ClientToServerTableEvent.Start);
+  socket.emit(ClientToServerMemoryGameEvent.Start);
 };

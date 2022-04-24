@@ -1,10 +1,10 @@
-import { EventEmitter } from 'events';
-
 import { CardId, PrivateCard, PublicCard } from '@mnemo/common/models/card';
 import { PlayerId } from '@mnemo/common/models/player';
 import { randomItem, shuffle } from '@mnemo/common/utils/array';
 import { EmojiType, emojis } from '@mnemo/common/utils/emojis';
 import config from 'config';
+
+import { SafeTypeEmitter } from '../utils/safeTypeEmitter';
 
 export interface Player {
   id: string;
@@ -35,27 +35,12 @@ const publicCardFactory = (card: PrivateCard, preserveValue = false): PublicCard
   content: preserveValue ? card.content : null,
 });
 
-class MemoryGame {
+class MemoryGame extends SafeTypeEmitter<MemoryGameEvents> {
   private cards: PrivateCard[] = [];
   private players: Player[] = [];
   private running = false;
-  private emitter = new EventEmitter();
   private currentPlayer: Player | undefined = undefined;
   private selectedCards: PrivateCard[] = [];
-
-  private emit<E extends keyof MemoryGameEvents>(
-    event: E,
-    ...args: Parameters<MemoryGameEvents[E]>
-  ) {
-    return this.emitter.emit(event, ...args);
-  }
-
-  public on<E extends keyof MemoryGameEvents>(
-    event: E,
-    listener: (...args: Parameters<MemoryGameEvents[E]>) => void,
-  ) {
-    return this.emitter.on(event, listener as (...args: unknown[]) => void);
-  }
 
   public addPlayer(playerId: PlayerId) {
     if (!this.running) {

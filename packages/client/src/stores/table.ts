@@ -1,4 +1,4 @@
-import { PlayerScore } from '@mnemo/common/events/table';
+import { PlayerScore } from '@mnemo/common/events/memoryGame';
 import { CardId, PublicCard } from '@mnemo/common/models/card';
 import { makeAutoObservable } from 'mobx';
 
