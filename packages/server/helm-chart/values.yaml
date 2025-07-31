@@ -1,0 +1,27 @@
+# Server service values
+replicaCount: 1
+image:
+  repository: mnemo/server
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 3100
+
+# Ingress values
+ingress:
+  ingressClassName: nginx
+  annotations: []
+    # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+  host: mnemo-server.local
+
+persistence:
+  gifs:
+    storageClassName: local-path # shared-manual will create a pv
+    path: # Mandatory if shared-manual is used (and only used then)
+    capacity: 10Gi
+  uploads:
+    storageClassName: local-path # shared-manual will create a pv
+    path: # Mandatory if shared-manual is used (and only used then)
+    capacity: 1Gi

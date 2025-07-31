@@ -1,49 +1,83 @@
-## Available Scripts
+## Cloud
 
-### `yarn client:start:dev`
+### Docker
 
-Starts the client in dev mode
+#### Images creation
 
-### `yarn server:start:dev`
+```bash
+docker build -t mnemo/base -f Dockerfile  .
+docker build -t mnemo/server -f packages/server/Dockerfile  .
+docker build -t mnemo/web -f packages/client/Dockerfile  .
+```
 
-Starts the server in dev mode
+#### Debugging the images
 
-### `yarn server:start:prod`
+##### Base
 
-Starts the server in prod mode
+```bash
+docker container run -it --rm mnemo/base /bin/sh
+```
 
-### `yarn client:test:watch`
+##### Server
 
-Launches the test runner for the client in the interactive watch mode.
+```bash
+docker container run -it --rm mnemo/server /bin/sh
+```
 
-### `yarn common:test:watch`
+##### Web
 
-Launches the test runner for common library in the interactive watch mode.
+```bash
+docker container run -it --rm mnemo/web /bin/sh
+```
 
-### `yarn server:test:watch`
+### Helm
 
-Launches the test runner for the server in the interactive watch mode.
+#### Installing
 
-### `yarn client:build`
+##### Server
 
-Builds the client app for production
+```bash
+helm install -n mnemo --create-namespace mnemo-server ./apps/server/helm-chart
+```
 
-### `yarn common:build`
+##### Web
 
-Builds the common library for production
+```bash
+helm install -n mnemo --create-namespace mnemo-web ./apps/web/helm-chart
+```
 
-### `yarn server:build`
+#### Uninstalling
 
-Builds the server app for production
+##### Server
 
-### `yarn build`
+```bash
+helm uninstall -n mnemo --create-namespace mnemo-server
+```
 
-Builds the whole application and sets needed links
+##### Web
 
-### `yarn server:build`
+```bash
+helm uninstall -n mnemo --create-namespace mnemo-web ./apps/web/helm-chart
+```
 
-Builds the server app for production
+### Helmfile
 
-### `yarn clean:install`
+Our setup works with environments, so assuming you created a values.yaml in the following path:
 
-Cleans all node_modules folders and installs dependencies from scratch
+```
+environments
+  local
+    values.yaml
+```
+
+#### Installation
+
+```bash
+helmfile apply -e local
+```
+
+#### Uninstalling
+
+```bash
+helmfile destroy -e local
+```

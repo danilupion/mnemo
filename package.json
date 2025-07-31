@@ -6,29 +6,19 @@
     "email": "danilupion@gmail.com"
   },
   "license": "MIT",
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "client:start:dev": "yarn workspace @mnemo/client start:dev",
-    "server:start:dev": "yarn workspace @mnemo/server start:dev",
-    "start:dev": "./scripts/parallelRun.sh 'yarn client:start:dev' 'yarn server:start:dev'",
-    "server:start:prod": "yarn workspace @mnemo/server start:prod",
-    "client:test:watch": "yarn workspace @mnemo/client test:watch",
-    "common:test:watch": "yarn workspace @mnemo/common test:watch",
-    "server:test:watch": "yarn workspace @mnemo/server test:watch",
-    "client:build": "yarn workspace @mnemo/client build",
-    "common:build": "yarn workspace @mnemo/common build",
-    "server:build": "yarn workspace @mnemo/server build",
-    "build": "./scripts/build.sh",
+    "start:dev": "turbo start:dev",
+    "test:watch": "turbo test:watch",
+    "build": "turbo build",
     "clean:install": "./scripts/clean-install.sh"
   },
   "devDependencies": {
-    "husky": "^7.0.4"
+    "husky": "7.0.4",
+    "turbo": "2.5.5"
   },
   "engines": {
-    "node": "=22.12.0",
-    "yarn": "=1.22.22"
+    "node": "^22.12.0",
+    "pnpm": "^10.13.1"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "pnpm@10.13.1"
 }

@@ -1,0 +1,8 @@
+packages:
+  - packages/*
+
+injectWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - core-js
+  - core-js-pure
