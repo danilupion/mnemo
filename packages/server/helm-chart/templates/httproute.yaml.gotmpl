@@ -1,8 +1,8 @@
 {{- if .Values.route.enabled }}
-# Gateway API HTTPRoute - successor to the Ingress. Encodes the same paths the
+# Gateway API HTTPRoute (the chart's only exposure mechanism). Encodes the same paths the
 # server ingress declares (/api, /websocket); the web chart routes everything
 # else. Same-hostname routes are merged by the gateway with most-specific path
-# precedence. ingress and route are independent during a migration window.
+# precedence.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
