@@ -1,0 +1,29 @@
+{{- if .Values.route.enabled }}
+# Gateway API HTTPRoute - successor to the Ingress. Routes everything not
+# claimed by the server route (/api, /websocket) to the web service; the
+# gateway merges same-hostname routes with most-specific path precedence.
+# ingress and route are independent during a migration window.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "mnemo-web.fullname" . }}
+  labels:
+    {{- include "mnemo-web.labels" . | nindent 4 }}
+  {{- with .Values.route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- toYaml (required "route.parentRefs is required when route.enabled" .Values.route.parentRefs) | nindent 4 }}
+  hostnames:
+    {{- toYaml (required "route.hostnames is required when route.enabled" .Values.route.hostnames) | nindent 4 }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "mnemo-web.fullname" . }}
+          port: {{ .Values.service.port }}
+{{- end }}

@@ -10,6 +10,7 @@ service:
 
 # Ingress values
 ingress:
+  enabled: true
   ingressClassName: nginx
   annotations: []
     # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
@@ -25,3 +26,14 @@ persistence:
     storageClassName: local-path # shared-manual will create a pv
     path: # Mandatory if shared-manual is used (and only used then)
     capacity: 1Gi
+
+# Gateway API HTTPRoute - successor to the Ingress (same routing, declared
+# in the chart). ingress and route are independent during a migration window.
+route:
+  enabled: false
+  # Gateway(s) to attach to, e.g.:
+  #   - name: gateway-public
+  #     namespace: gateway-public
+  parentRefs: []
+  hostnames: []
+  annotations: {}
